@@ -147,6 +147,7 @@ incident = detect_incident(metrics)
 st.header("System Dependency Graph")
 show_dependency_graph(incident=incident)
 
+
 # =========================================================
 # INCIDENT / WARNING / NORMAL FLOW
 # =========================================================
@@ -203,7 +204,14 @@ if incident:
             add_log("INFO Nova reasoning completed")
 
         st.header("Nova AI Root Cause Analysis")
-        st.write(st.session_state.cached_reasoning)
+        st.caption("Generated live using Amazon Nova via Amazon Bedrock")
+
+        if st.session_state.cached_reasoning and "Fallback Note:" in st.session_state.cached_reasoning:
+            st.warning("Live Nova response was unavailable. Showing built-in fallback reasoning.")
+        else:
+            st.success("Live Nova reasoning active")
+
+        st.markdown(st.session_state.cached_reasoning)
 
         if not st.session_state.mitigation_done:
             healed_metrics, mitigation_action = execute_mitigation(metrics, incident)
@@ -214,6 +222,7 @@ if incident:
 
         st.header("Autonomous Mitigation Execution")
         st.success(f"Mitigation applied: {st.session_state.mitigation_action}")
+
 
 # =========================================================
 # NORMAL FLOW

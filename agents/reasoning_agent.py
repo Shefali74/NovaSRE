@@ -2,7 +2,6 @@ import json
 import boto3
 from botocore.config import Config
 
-# Add timeout configuration
 bedrock = boto3.client(
     "bedrock-runtime",
     region_name="us-east-1",
@@ -19,7 +18,7 @@ MODEL_ID = "amazon.nova-lite-v1:0"
 def get_nova_reasoning(incident, latest_metrics):
     incident_type = incident.get("type", "Unknown Incident")
     severity = incident.get("severity", "Unknown")
-    affected_services = ", ".join(incident.get("affected_services", []))
+    affected_services = ", ".join(incident.get("affected_services", [])) or "Unknown"
     business_impact = incident.get("business_impact", "Unknown impact")
 
     db_connection_usage = float(latest_metrics.get("db_connection_usage", 0))
@@ -31,7 +30,7 @@ def get_nova_reasoning(incident, latest_metrics):
     prompt = f"""
 You are Nova, an AI cloud reliability engineer.
 
-Analyze the incident and system performance metrics below and provide a concise, structured technical assessment.
+Analyze the incident and system performance metrics below and provide a concise, structured technical assessment for a cloud self-healing dashboard.
 
 Incident Details:
 - Incident Type: {incident_type}
@@ -49,13 +48,13 @@ System Metrics:
 Respond using exactly these sections:
 
 Root Cause:
-Explain the likely technical cause of the issue.
+Explain the most likely technical cause of the issue.
 
 System Impact:
-Explain which services are affected and how the issue propagates.
+Explain which services are affected and how the issue propagates through dependencies.
 
 Recommended Mitigation:
-Provide clear infrastructure or application mitigation steps.
+Provide clear, specific infrastructure or application mitigation steps in 2 to 4 lines.
 """.strip()
 
     body = {
@@ -68,7 +67,7 @@ Provide clear infrastructure or application mitigation steps.
             }
         ],
         "inferenceConfig": {
-            "max_new_tokens": 300,
+            "maxTokens": 300,
             "temperature": 0.2
         }
     }
@@ -86,10 +85,10 @@ Provide clear infrastructure or application mitigation steps.
 
     except Exception as e:
         return f"""Root Cause:
-High database connection usage and latency indicate saturation at the database layer, likely causing slow query execution and increasing load on dependent services.
+High database connection usage and latency indicate saturation at the database layer, likely causing slow query execution and pressure on dependent services.
 
 System Impact:
-The database bottleneck affects API responsiveness and payment transaction reliability. This can reduce system throughput and create revenue risk.
+The database bottleneck degrades API responsiveness and payment transaction reliability, reducing throughput and creating direct revenue risk.
 
 Recommended Mitigation:
 Scale database resources, optimize connection pooling, reduce expensive queries, and strengthen alerting for latency, connection usage, and payment failure spikes.
