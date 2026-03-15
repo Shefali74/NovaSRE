@@ -85,3 +85,11 @@ NovaSRE/
 ├── requirements.txt
 ├── .gitignore
 └── README.md
+
+## Core Components
+
+- **Detection Agent**: Detects warning and critical incidents from live metrics
+- **Reasoning Agent**: Uses Amazon Nova on Bedrock for root-cause analysis
+- **Execution Agent**: Applies autonomous mitigation actions
+- **Dependency Agent**: Visualizes service dependency impact
+- **Simulation Engine**: Generates realistic live cloud health metrics
